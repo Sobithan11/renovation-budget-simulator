@@ -1,0 +1,101 @@
+{
+  "extension": {
+    "type": "per_sqm",
+    "unit": "m2",
+    "distribution": "triangular",
+    "minimum": 2600,
+    "typical": 3400,
+    "maximum": 4500,
+    "currency": "GBP"
+  },
+
+  "kitchen": {
+    "type": "fixed",
+    "unit": "project",
+    "distribution": "triangular",
+    "minimum": 10000,
+    "typical": 25000,
+    "maximum": 50000,
+    "currency": "GBP"
+  },
+
+  "bathroom": {
+    "type": "fixed",
+    "unit": "project",
+    "distribution": "triangular",
+    "minimum": 7000,
+    "typical": 13000,
+    "maximum": 25000,
+    "currency": "GBP"
+  },
+
+  "flooring": {
+    "type": "per_sqm",
+    "unit": "m2",
+    "distribution": "triangular",
+    "minimum": 30,
+    "typical": 65,
+    "maximum": 120,
+    "currency": "GBP"
+  },
+
+  "electrical": {
+    "type": "fixed",
+    "unit": "project",
+    "distribution": "triangular",
+    "minimum": 2000,
+    "typical": 5000,
+    "maximum": 10000,
+    "currency": "GBP"
+  },
+
+  "plumbing": {
+    "type": "fixed",
+    "unit": "project",
+    "distribution": "triangular",
+    "minimum": 1500,
+    "typical": 3500,
+    "maximum": 7000,
+    "currency": "GBP"
+  },
+
+  "plastering": {
+    "type": "per_sqm",
+    "unit": "m2",
+    "distribution": "triangular",
+    "minimum": 18,
+    "typical": 24,
+    "maximum": 35,
+    "currency": "GBP"
+  },
+
+  "painting": {
+    "type": "per_sqm",
+    "unit": "m2",
+    "distribution": "triangular",
+    "minimum": 10,
+    "typical": 15,
+    "maximum": 25,
+    "currency": "GBP"
+  },
+
+  "windows_doors": {
+    "type": "per_item",
+    "unit": "item",
+    "distribution": "triangular",
+    "minimum": 500,
+    "typical": 1200,
+    "maximum": 2500,
+    "currency": "GBP"
+  },
+
+  "landscaping": {
+    "type": "per_sqm",
+    "unit": "m2",
+    "distribution": "triangular",
+    "minimum": 20,
+    "typical": 70,
+    "maximum": 130,
+    "currency": "GBP"
+  }
+}
