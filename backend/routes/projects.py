@@ -163,5 +163,6 @@ def simulate_project(project_id):
     return jsonify({
         "project_id": project_id,
         "project_name": project.name,
+        "budget": project.budget,
         **analysis
     })
