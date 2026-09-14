@@ -12,9 +12,12 @@ def load_cost_data():
         return json.load(file)
 
 
-def sample_cost(category, simulations=1):
+def sample_cost(category, simulations=1, option=None):
     cost_data = load_cost_data()
     category_data = cost_data[category]
+
+    if option is not None:
+        category_data = category_data["options"][option]
 
     minimum = category_data["minimum"]
     typical = category_data["typical"]
@@ -27,12 +30,25 @@ def sample_cost(category, simulations=1):
         simulations
     )
 
+
 def calculate_project_cost(project):
     total_cost = 0.0
 
+    # Extension is treated as a base construction cost.
+    # The extension rate already includes basic structural,
+    # electrical, plumbing, plastering, roofing and standard
+    # windows/doors work.
     if project.extension_size > 0:
         extension_rate = sample_cost("extension")[0]
         total_cost += extension_rate * project.extension_size
+
+    # These are treated as additional costs because they are
+    # not included in the base extension rate.
+    if project.kitchen_spec != "none":
+        total_cost += sample_cost("kitchen", option=project.kitchen_spec)[0]
+
+    if project.bathroom_spec != "none":
+        total_cost += sample_cost("bathroom", option=project.bathroom_spec)[0]
 
     if project.flooring_area > 0:
         flooring_rate = sample_cost("flooring")[0]
@@ -42,34 +58,25 @@ def calculate_project_cost(project):
         landscaping_rate = sample_cost("landscaping")[0]
         total_cost += landscaping_rate * project.landscaping_area
 
-    if project.windows_doors > 0:
-        window_door_cost = sample_cost("windows_doors")[0]
-        total_cost += window_door_cost * project.windows_doors
+    # These are only added when there is no extension.
+    # Otherwise they are assumed to be covered by the
+    # extension construction allowance.
+    if project.extension_size == 0:
 
-    if project.kitchen_spec != "none":
-        total_cost += sample_cost("kitchen")[0]
+        if project.electrical_work:
+            total_cost += sample_cost("electrical")[0]
 
-    if project.bathroom_spec != "none":
-        total_cost += sample_cost("bathroom")[0]
+        if project.plumbing_work:
+            total_cost += sample_cost("plumbing")[0]
 
-    if project.electrical_work:
-        total_cost += sample_cost("electrical")[0]
+        if project.plastering_work:
+            total_cost += sample_cost("plastering")[0]
 
-    if project.plumbing_work:
-        total_cost += sample_cost("plumbing")[0]
+        if project.painting_work:
+            total_cost += sample_cost("painting")[0]
 
-    if project.plastering_work:
-        plastering_rate = sample_cost("plastering")[0]
-
-        # Temporary area assumption; we'll improve the project
-        # inputs later.
-        total_cost += plastering_rate * project.extension_size
-
-    if project.painting_work:
-        painting_rate = sample_cost("painting")[0]
-
-        # Temporary area assumption; we'll improve the project
-        # inputs later.
-        total_cost += painting_rate * project.extension_size
+        if project.windows_doors > 0:
+            window_door_cost = sample_cost("windows_doors")[0]
+            total_cost += window_door_cost * project.windows_doors
 
     return total_cost

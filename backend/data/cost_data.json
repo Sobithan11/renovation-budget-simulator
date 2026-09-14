@@ -13,9 +13,23 @@
     "type": "fixed",
     "unit": "project",
     "distribution": "triangular",
-    "minimum": 10000,
-    "typical": 25000,
-    "maximum": 50000,
+    "options": {
+      "budget": {
+        "minimum": 8000,
+        "typical": 10000,
+        "maximum": 15000
+      },
+      "standard": {
+        "minimum": 20000,
+        "typical": 25000,
+        "maximum": 40000
+      },
+      "high": {
+        "minimum": 40000,
+        "typical": 50000,
+        "maximum": 75000
+      }
+    },
     "currency": "GBP"
   },
 
@@ -23,9 +37,23 @@
     "type": "fixed",
     "unit": "project",
     "distribution": "triangular",
-    "minimum": 7000,
-    "typical": 13000,
-    "maximum": 25000,
+    "options": {
+      "budget": {
+        "minimum": 5000,
+        "typical": 7000,
+        "maximum": 10000
+      },
+      "standard": {
+        "minimum": 8000,
+        "typical": 13000,
+        "maximum": 18000
+      },
+      "high": {
+        "minimum": 15000,
+        "typical": 25000,
+        "maximum": 30000
+      }
+    },
     "currency": "GBP"
   },
 
