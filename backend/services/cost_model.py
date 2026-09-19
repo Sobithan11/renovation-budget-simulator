@@ -12,9 +12,14 @@ def load_cost_data():
         return json.load(file)
 
 
+# Load cost data once when the application starts.
+# This avoids repeatedly opening and reading the JSON file
+# during the Monte Carlo simulation.
+COST_DATA = load_cost_data()
+
+
 def sample_cost(category, simulations=1, option=None):
-    cost_data = load_cost_data()
-    category_data = cost_data[category]
+    category_data = COST_DATA[category]
 
     if option is not None:
         category_data = category_data["options"][option]
