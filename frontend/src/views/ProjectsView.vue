@@ -1,5 +1,6 @@
+```vue
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref } from 'vue'
 import ProjectCard from '../components/ProjectCard.vue'
 import type {
   Project,
@@ -17,7 +18,7 @@ const project = reactive<ProjectFormData>({
   electrical_work: false,
   plumbing_work: false,
   plastering_work: false,
-  painting_work: false,
+  painting_area: 0,
   windows_doors: 0,
   structural_work: false,
   roofing_work: false,
@@ -38,15 +39,40 @@ const fieldErrors = reactive({
   budget: '',
   extension_size: '',
   flooring_area: '',
+  painting_area: '',
   landscaping_area: '',
   windows_doors: '',
 })
+
+const formRef = ref<HTMLFormElement | null>(null)
+
+async function scrollToFirstError() {
+  await nextTick()
+
+  const firstError = formRef.value?.querySelector(
+    '.field-error'
+  )
+
+  if (firstError) {
+    firstError.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+  }
+}
+
+function preventNumberInputScroll(event: WheelEvent) {
+  const target = event.target as HTMLInputElement
+
+  target.blur()
+}
 
 function validateProject() {
   fieldErrors.name = ''
   fieldErrors.budget = ''
   fieldErrors.extension_size = ''
   fieldErrors.flooring_area = ''
+  fieldErrors.painting_area = ''
   fieldErrors.landscaping_area = ''
   fieldErrors.windows_doors = ''
 
@@ -58,7 +84,8 @@ function validateProject() {
   }
 
   if (!Number.isFinite(project.budget) || project.budget <= 0) {
-    fieldErrors.budget = 'Budget must be greater than £0.'
+    fieldErrors.budget =
+      'Budget is required and must be greater than £0.'
     valid = false
   }
 
@@ -67,7 +94,7 @@ function validateProject() {
     project.extension_size < 0
   ) {
     fieldErrors.extension_size =
-      'Extension size cannot be negative.'
+      'Extension size is required and must be 0 or greater.'
     valid = false
   }
 
@@ -76,7 +103,16 @@ function validateProject() {
     project.flooring_area < 0
   ) {
     fieldErrors.flooring_area =
-      'Flooring area cannot be negative.'
+      'Flooring area is required and must be 0 or greater.'
+    valid = false
+  }
+
+  if (
+    !Number.isFinite(project.painting_area) ||
+    project.painting_area < 0
+  ) {
+    fieldErrors.painting_area =
+      'Painting area is required and must be 0 or greater.'
     valid = false
   }
 
@@ -85,7 +121,7 @@ function validateProject() {
     project.landscaping_area < 0
   ) {
     fieldErrors.landscaping_area =
-      'Landscaping area cannot be negative.'
+      'Landscaping area is required and must be 0 or greater.'
     valid = false
   }
 
@@ -94,7 +130,7 @@ function validateProject() {
     project.windows_doors < 0
   ) {
     fieldErrors.windows_doors =
-      'Number of windows/doors must be a whole number of 0 or more.'
+      'Number of windows/doors is required and must be a whole number of 0 or greater.'
     valid = false
   }
 
@@ -106,6 +142,7 @@ async function createProject() {
   error.value = ''
 
   if (!validateProject()) {
+    await scrollToFirstError()
     return
   }
 
@@ -130,6 +167,21 @@ async function createProject() {
     }
 
     message.value = 'Project created successfully.'
+
+    project.name = ''
+    project.budget = 0
+    project.extension_size = 0
+    project.kitchen_spec = 'standard'
+    project.bathroom_spec = 'standard'
+    project.flooring_area = 0
+    project.electrical_work = false
+    project.plumbing_work = false
+    project.plastering_work = false
+    project.painting_area = 0
+    project.windows_doors = 0
+    project.structural_work = false
+    project.roofing_work = false
+    project.landscaping_area = 0
 
     await loadProjects()
   } catch (err) {
@@ -231,6 +283,7 @@ onMounted(() => {
     </section>
 
     <form
+      ref="formRef"
       class="project-form"
       @submit.prevent="createProject"
     >
@@ -262,6 +315,7 @@ onMounted(() => {
             type="number"
             min="1"
             step="1"
+            @wheel="preventNumberInputScroll"
           />
 
           <span
@@ -284,6 +338,7 @@ onMounted(() => {
             type="number"
             min="0"
             step="0.1"
+            @wheel="preventNumberInputScroll"
           />
 
           <span
@@ -324,6 +379,7 @@ onMounted(() => {
             type="number"
             min="0"
             step="0.1"
+            @wheel="preventNumberInputScroll"
           />
 
           <span
@@ -335,6 +391,25 @@ onMounted(() => {
         </label>
 
         <label>
+          Painting area (m²)
+
+          <input
+            v-model.number="project.painting_area"
+            type="number"
+            min="0"
+            step="0.1"
+            @wheel="preventNumberInputScroll"
+          />
+
+          <span
+            v-if="fieldErrors.painting_area"
+            class="field-error"
+          >
+            {{ fieldErrors.painting_area }}
+          </span>
+        </label>
+
+        <label>
           Landscaping area (m²)
 
           <input
@@ -342,6 +417,7 @@ onMounted(() => {
             type="number"
             min="0"
             step="0.1"
+            @wheel="preventNumberInputScroll"
           />
 
           <span
@@ -382,14 +458,6 @@ onMounted(() => {
 
         <label class="checkbox-label">
           <input
-            v-model="project.painting_work"
-            type="checkbox"
-          />
-          Painting
-        </label>
-
-        <label class="checkbox-label">
-          <input
             v-model="project.structural_work"
             type="checkbox"
           />
@@ -412,6 +480,7 @@ onMounted(() => {
             type="number"
             min="0"
             step="1"
+            @wheel="preventNumberInputScroll"
           />
 
           <span

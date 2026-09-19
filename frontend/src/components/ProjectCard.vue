@@ -60,6 +60,11 @@ const emit = defineEmits<{
       </div>
 
       <div>
+        <span>Painting</span>
+        <strong>{{ project.painting_area }} m²</strong>
+      </div>
+      
+      <div>
         <span>Landscaping</span>
         <strong>{{ project.landscaping_area }} m²</strong>
       </div>

@@ -26,7 +26,7 @@ def initialise_database():
             electrical_work INTEGER DEFAULT 0,
             plumbing_work INTEGER DEFAULT 0,
             plastering_work INTEGER DEFAULT 0,
-            painting_work INTEGER DEFAULT 0,
+            painting_area REAL DEFAULT 0,
             windows_doors INTEGER DEFAULT 0,
             structural_work INTEGER DEFAULT 0,
             roofing_work INTEGER DEFAULT 0,

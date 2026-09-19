@@ -22,6 +22,7 @@ const scenarioExtensionSize = ref(0)
 const scenarioKitchenSpec = ref('standard')
 const scenarioBathroomSpec = ref('standard')
 const scenarioFlooringArea = ref(0)
+const scenarioPaintingArea = ref(0)
 const scenarioLandscapingArea = ref(0)
 
 const scenarioResult = ref<SimulationResult | null>(null)
@@ -43,14 +44,22 @@ function loadScenarioFromProject() {
   }
 
   scenarioBudget.value = selectedProject.value.budget
+
   scenarioExtensionSize.value =
     selectedProject.value.extension_size
+
   scenarioKitchenSpec.value =
     selectedProject.value.kitchen_spec
+
   scenarioBathroomSpec.value =
     selectedProject.value.bathroom_spec
+
   scenarioFlooringArea.value =
     selectedProject.value.flooring_area
+
+  scenarioPaintingArea.value =
+    selectedProject.value.painting_area
+
   scenarioLandscapingArea.value =
     selectedProject.value.landscaping_area
 
@@ -87,6 +96,14 @@ async function runScenario() {
   }
 
   if (
+    !Number.isFinite(scenarioPaintingArea.value) ||
+    scenarioPaintingArea.value < 0
+  ) {
+    error.value = 'Painting area cannot be negative.'
+    return
+  }
+
+  if (
     !Number.isFinite(scenarioLandscapingArea.value) ||
     scenarioLandscapingArea.value < 0
   ) {
@@ -105,20 +122,24 @@ async function runScenario() {
     kitchen_spec: scenarioKitchenSpec.value,
     bathroom_spec: scenarioBathroomSpec.value,
     flooring_area: scenarioFlooringArea.value,
+    painting_area: scenarioPaintingArea.value,
     landscaping_area: scenarioLandscapingArea.value,
 
     electrical_work:
       selectedProject.value.electrical_work,
+
     plumbing_work:
       selectedProject.value.plumbing_work,
+
     plastering_work:
       selectedProject.value.plastering_work,
-    painting_work:
-      selectedProject.value.painting_work,
+
     windows_doors:
       selectedProject.value.windows_doors,
+
     structural_work:
       selectedProject.value.structural_work,
+
     roofing_work:
       selectedProject.value.roofing_work,
   }
@@ -155,6 +176,7 @@ async function runScenario() {
       kitchen_spec: scenarioKitchenSpec.value,
       bathroom_spec: scenarioBathroomSpec.value,
       flooring_area: scenarioFlooringArea.value,
+      painting_area: scenarioPaintingArea.value,
       landscaping_area: scenarioLandscapingArea.value,
       result: data,
     })
@@ -188,7 +210,9 @@ async function loadProjects() {
     projects.value = await response.json()
 
     if (projects.value.length > 0) {
-      selectedProjectId.value = projects.value[0].id
+      selectedProjectId.value =
+        projects.value[0]?.id ?? null
+
       loadScenarioFromProject()
     }
   } catch (err) {
@@ -305,6 +329,13 @@ onMounted(() => {
         </div>
 
         <div class="setting">
+          <span>Painting</span>
+          <strong>
+            {{ selectedProject.painting_area }} m²
+          </strong>
+        </div>
+
+        <div class="setting">
           <span>Landscaping</span>
           <strong>
             {{ selectedProject.landscaping_area }} m²
@@ -389,6 +420,20 @@ onMounted(() => {
             <input
               id="scenario-flooring"
               v-model.number="scenarioFlooringArea"
+              type="number"
+              min="0"
+              step="0.1"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="scenario-painting">
+              Painting area (m²)
+            </label>
+
+            <input
+              id="scenario-painting"
+              v-model.number="scenarioPaintingArea"
               type="number"
               min="0"
               step="0.1"

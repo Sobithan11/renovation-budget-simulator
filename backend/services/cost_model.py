@@ -58,29 +58,32 @@ def calculate_project_cost(project):
         flooring_rate = sample_cost("flooring")[0]
         total_cost += flooring_rate * project.flooring_area
 
+    # Painting
+    if project.painting_area > 0:
+        painting_rate = sample_cost("painting")[0]
+        total_cost += painting_rate * project.painting_area
+
     # Landscaping
     if project.landscaping_area > 0:
         landscaping_rate = sample_cost("landscaping")[0]
         total_cost += landscaping_rate * project.landscaping_area
 
-    # Additional standalone work
-    if project.extension_size == 0:
+    # Electrical work
+    if project.electrical_work:
+        total_cost += sample_cost("electrical")[0]
 
-        if project.electrical_work:
-            total_cost += sample_cost("electrical")[0]
+    # Plumbing work
+    if project.plumbing_work:
+        total_cost += sample_cost("plumbing")[0]
 
-        if project.plumbing_work:
-            total_cost += sample_cost("plumbing")[0]
+    # Plastering work
+    if project.plastering_work:
+        total_cost += sample_cost("plastering")[0]
 
-        if project.plastering_work:
-            total_cost += sample_cost("plastering")[0]
-
-        if project.painting_work:
-            total_cost += sample_cost("painting")[0]
-
-        if project.windows_doors > 0:
-            window_door_cost = sample_cost("windows_doors")[0]
-            total_cost += window_door_cost * project.windows_doors
+    # Windows and doors
+    if project.windows_doors > 0:
+        window_door_cost = sample_cost("windows_doors")[0]
+        total_cost += window_door_cost * project.windows_doors
 
     return total_cost
 
@@ -120,6 +123,13 @@ def calculate_project_cost_breakdown(project):
     else:
         breakdown["flooring"] = 0.0
 
+    # Painting
+    if project.painting_area > 0:
+        painting_rate = sample_cost("painting")[0]
+        breakdown["painting"] = painting_rate * project.painting_area
+    else:
+        breakdown["painting"] = 0.0
+
     # Landscaping
     if project.landscaping_area > 0:
         landscaping_rate = sample_cost("landscaping")[0]
@@ -129,35 +139,31 @@ def calculate_project_cost_breakdown(project):
     else:
         breakdown["landscaping"] = 0.0
 
-    # Standalone work
-    if project.extension_size == 0:
+    # Electrical work
+    if project.electrical_work:
+        breakdown["electrical"] = sample_cost("electrical")[0]
+    else:
+        breakdown["electrical"] = 0.0
 
-        if project.electrical_work:
-            breakdown["electrical"] = sample_cost("electrical")[0]
-        else:
-            breakdown["electrical"] = 0.0
+    # Plumbing work
+    if project.plumbing_work:
+        breakdown["plumbing"] = sample_cost("plumbing")[0]
+    else:
+        breakdown["plumbing"] = 0.0
 
-        if project.plumbing_work:
-            breakdown["plumbing"] = sample_cost("plumbing")[0]
-        else:
-            breakdown["plumbing"] = 0.0
+    # Plastering work
+    if project.plastering_work:
+        breakdown["plastering"] = sample_cost("plastering")[0]
+    else:
+        breakdown["plastering"] = 0.0
 
-        if project.plastering_work:
-            breakdown["plastering"] = sample_cost("plastering")[0]
-        else:
-            breakdown["plastering"] = 0.0
-
-        if project.painting_work:
-            breakdown["painting"] = sample_cost("painting")[0]
-        else:
-            breakdown["painting"] = 0.0
-
-        if project.windows_doors > 0:
-            window_door_cost = sample_cost("windows_doors")[0]
-            breakdown["windows_doors"] = (
-                window_door_cost * project.windows_doors
-            )
-        else:
-            breakdown["windows_doors"] = 0.0
+    # Windows and doors
+    if project.windows_doors > 0:
+        window_door_cost = sample_cost("windows_doors")[0]
+        breakdown["windows_doors"] = (
+            window_door_cost * project.windows_doors
+        )
+    else:
+        breakdown["windows_doors"] = 0.0
 
     return breakdown

@@ -3,9 +3,9 @@
     "type": "per_sqm",
     "unit": "m2",
     "distribution": "triangular",
-    "minimum": 2600,
-    "typical": 3400,
-    "maximum": 4500,
+    "minimum": 2200,
+    "typical": 2800,
+    "maximum": 3600,
     "currency": "GBP"
   },
 

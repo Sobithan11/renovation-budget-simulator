@@ -38,7 +38,7 @@ async function loadProjects() {
     projects.value = await response.json()
 
     if (projects.value.length > 0) {
-      selectedProjectId.value = projects.value[0].id
+      selectedProjectId.value = projects.value[0]?.id ?? null
     }
   } catch (err) {
     error.value = 'Could not connect to the backend.'

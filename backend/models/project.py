@@ -14,7 +14,7 @@ class RenovationProject:
     electrical_work: bool = False
     plumbing_work: bool = False
     plastering_work: bool = False
-    painting_work: bool = False
+    painting_area: float = 0.0
 
     windows_doors: int = 0
     structural_work: bool = False

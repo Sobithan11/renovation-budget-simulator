@@ -10,7 +10,7 @@ export interface Project {
   electrical_work: boolean
   plumbing_work: boolean
   plastering_work: boolean
-  painting_work: boolean
+  painting_area: number
   windows_doors: number
   structural_work: boolean
   roofing_work: boolean
@@ -26,7 +26,7 @@ export interface ProjectFormData {
   electrical_work: boolean
   plumbing_work: boolean
   plastering_work: boolean
-  painting_work: boolean
+  painting_area: number
   windows_doors: number
   structural_work: boolean
   roofing_work: boolean
@@ -65,6 +65,7 @@ export interface Scenario {
   kitchen_spec: string
   bathroom_spec: string
   flooring_area: number
+  painting_area: number
   landscaping_area: number
   result: SimulationResult
 }
