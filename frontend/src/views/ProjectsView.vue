@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import ProjectCard from '../components/ProjectCard.vue'
+import type {
+  Project,
+  ProjectFormData,
+  SimulationResult,
+} from '../types/simulation'
 
-interface Project {
-  id: number
-  name: string
-  budget: number
-  extension_size: number
-  kitchen_spec: string
-  bathroom_spec: string
-  flooring_area: number
-  landscaping_area: number
-}
-
-const project = reactive({
+const project = reactive<ProjectFormData>({
   name: '',
   budget: 0,
   extension_size: 0,
@@ -30,33 +25,111 @@ const project = reactive({
 })
 
 const projects = ref<Project[]>([])
-const simulationResults = ref<Record<number, any>>({})
+const simulationResults = ref<
+  Record<number, SimulationResult>
+>({})
 const simulationLoading = ref<number | null>(null)
 
 const message = ref('')
 const error = ref('')
 
+const fieldErrors = reactive({
+  name: '',
+  budget: '',
+  extension_size: '',
+  flooring_area: '',
+  landscaping_area: '',
+  windows_doors: '',
+})
+
+function validateProject() {
+  fieldErrors.name = ''
+  fieldErrors.budget = ''
+  fieldErrors.extension_size = ''
+  fieldErrors.flooring_area = ''
+  fieldErrors.landscaping_area = ''
+  fieldErrors.windows_doors = ''
+
+  let valid = true
+
+  if (!project.name.trim()) {
+    fieldErrors.name = 'Project name is required.'
+    valid = false
+  }
+
+  if (!Number.isFinite(project.budget) || project.budget <= 0) {
+    fieldErrors.budget = 'Budget must be greater than £0.'
+    valid = false
+  }
+
+  if (
+    !Number.isFinite(project.extension_size) ||
+    project.extension_size < 0
+  ) {
+    fieldErrors.extension_size =
+      'Extension size cannot be negative.'
+    valid = false
+  }
+
+  if (
+    !Number.isFinite(project.flooring_area) ||
+    project.flooring_area < 0
+  ) {
+    fieldErrors.flooring_area =
+      'Flooring area cannot be negative.'
+    valid = false
+  }
+
+  if (
+    !Number.isFinite(project.landscaping_area) ||
+    project.landscaping_area < 0
+  ) {
+    fieldErrors.landscaping_area =
+      'Landscaping area cannot be negative.'
+    valid = false
+  }
+
+  if (
+    !Number.isInteger(project.windows_doors) ||
+    project.windows_doors < 0
+  ) {
+    fieldErrors.windows_doors =
+      'Number of windows/doors must be a whole number of 0 or more.'
+    valid = false
+  }
+
+  return valid
+}
+
 async function createProject() {
   message.value = ''
   error.value = ''
 
+  if (!validateProject()) {
+    return
+  }
+
   try {
-    const response = await fetch('http://127.0.0.1:5000/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      'http://127.0.0.1:5000/projects',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(project),
       },
-      body: JSON.stringify(project),
-    })
+    )
 
     const data = await response.json()
 
     if (!response.ok) {
-      error.value = data.error || 'Failed to create project'
+      error.value =
+        data.error || 'Failed to create project.'
       return
     }
 
-    message.value = `Project created successfully. ID: ${data.project_id}`
+    message.value = 'Project created successfully.'
 
     await loadProjects()
   } catch (err) {
@@ -79,7 +152,8 @@ async function runProjectSimulation(projectId: number) {
     const data = await response.json()
 
     if (!response.ok) {
-      error.value = data.error || 'Failed to run simulation'
+      error.value =
+        data.error || 'Failed to run simulation.'
       return
     }
 
@@ -91,26 +165,44 @@ async function runProjectSimulation(projectId: number) {
   }
 }
 
-function getBudgetStatus(projectId: number) {
-  const result = simulationResults.value[projectId]
+async function deleteProject(projectId: number) {
+  error.value = ''
+  message.value = ''
 
-  if (!result) {
-    return ''
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:5000/projects/${projectId}`,
+      {
+        method: 'DELETE',
+      },
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      error.value =
+        data.error || 'Failed to delete project.'
+      return
+    }
+
+    delete simulationResults.value[projectId]
+
+    message.value = 'Project deleted successfully.'
+
+    await loadProjects()
+  } catch (err) {
+    error.value = 'Could not connect to the backend.'
   }
-
-  if (result.median_cost <= result.budget) {
-    return 'Within budget'
-  }
-
-  return 'Over budget'
 }
 
 async function loadProjects() {
   try {
-    const response = await fetch('http://127.0.0.1:5000/projects')
+    const response = await fetch(
+      'http://127.0.0.1:5000/projects',
+    )
 
     if (!response.ok) {
-      error.value = 'Failed to load projects'
+      error.value = 'Failed to load projects.'
       return
     }
 
@@ -126,30 +218,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <main>
-    <h1>Renovation Budget Simulator</h1>
-    <p>Plan your renovation and understand your budget risk.</p>
+  <main class="projects">
+    <section class="page-header">
+      <p class="eyebrow">Project management</p>
 
-    <form>
+      <h1>Projects</h1>
+
+      <p class="subtitle">
+        Create and manage renovation projects and run
+        budget simulations.
+      </p>
+    </section>
+
+    <form
+      class="project-form"
+      @submit.prevent="createProject"
+    >
       <section>
         <h2>Project details</h2>
 
         <label>
           Project name
+
           <input
             v-model="project.name"
             type="text"
             placeholder="e.g. House Renovation"
           />
+
+          <span
+            v-if="fieldErrors.name"
+            class="field-error"
+          >
+            {{ fieldErrors.name }}
+          </span>
         </label>
 
         <label>
           Budget (£)
+
           <input
             v-model.number="project.budget"
             type="number"
-            min="0"
+            min="1"
+            step="1"
           />
+
+          <span
+            v-if="fieldErrors.budget"
+            class="field-error"
+          >
+            {{ fieldErrors.budget }}
+          </span>
         </label>
       </section>
 
@@ -158,15 +278,25 @@ onMounted(() => {
 
         <label>
           Extension size (m²)
+
           <input
             v-model.number="project.extension_size"
             type="number"
             min="0"
+            step="0.1"
           />
+
+          <span
+            v-if="fieldErrors.extension_size"
+            class="field-error"
+          >
+            {{ fieldErrors.extension_size }}
+          </span>
         </label>
 
         <label>
           Kitchen specification
+
           <select v-model="project.kitchen_spec">
             <option value="none">None</option>
             <option value="budget">Budget</option>
@@ -177,6 +307,7 @@ onMounted(() => {
 
         <label>
           Bathroom specification
+
           <select v-model="project.bathroom_spec">
             <option value="none">None</option>
             <option value="budget">Budget</option>
@@ -187,27 +318,45 @@ onMounted(() => {
 
         <label>
           Flooring area (m²)
+
           <input
             v-model.number="project.flooring_area"
             type="number"
             min="0"
+            step="0.1"
           />
+
+          <span
+            v-if="fieldErrors.flooring_area"
+            class="field-error"
+          >
+            {{ fieldErrors.flooring_area }}
+          </span>
         </label>
 
         <label>
           Landscaping area (m²)
+
           <input
             v-model.number="project.landscaping_area"
             type="number"
             min="0"
+            step="0.1"
           />
+
+          <span
+            v-if="fieldErrors.landscaping_area"
+            class="field-error"
+          >
+            {{ fieldErrors.landscaping_area }}
+          </span>
         </label>
       </section>
 
       <section>
         <h2>Additional work</h2>
 
-        <label>
+        <label class="checkbox-label">
           <input
             v-model="project.electrical_work"
             type="checkbox"
@@ -215,7 +364,7 @@ onMounted(() => {
           Electrical work
         </label>
 
-        <label>
+        <label class="checkbox-label">
           <input
             v-model="project.plumbing_work"
             type="checkbox"
@@ -223,7 +372,7 @@ onMounted(() => {
           Plumbing work
         </label>
 
-        <label>
+        <label class="checkbox-label">
           <input
             v-model="project.plastering_work"
             type="checkbox"
@@ -231,7 +380,7 @@ onMounted(() => {
           Plastering
         </label>
 
-        <label>
+        <label class="checkbox-label">
           <input
             v-model="project.painting_work"
             type="checkbox"
@@ -239,7 +388,7 @@ onMounted(() => {
           Painting
         </label>
 
-        <label>
+        <label class="checkbox-label">
           <input
             v-model="project.structural_work"
             type="checkbox"
@@ -247,7 +396,7 @@ onMounted(() => {
           Structural work
         </label>
 
-        <label>
+        <label class="checkbox-label">
           <input
             v-model="project.roofing_work"
             type="checkbox"
@@ -257,177 +406,200 @@ onMounted(() => {
 
         <label>
           Number of windows/doors
+
           <input
             v-model.number="project.windows_doors"
             type="number"
             min="0"
+            step="1"
           />
+
+          <span
+            v-if="fieldErrors.windows_doors"
+            class="field-error"
+          >
+            {{ fieldErrors.windows_doors }}
+          </span>
         </label>
       </section>
 
       <button
-        type="button"
-        @click="createProject"
+        class="create-button"
+        type="submit"
       >
         Create Project
       </button>
 
-      <p v-if="message">{{ message }}</p>
-      <p v-if="error">{{ error }}</p>
+      <p
+        v-if="message"
+        class="success"
+      >
+        {{ message }}
+      </p>
+
+      <p
+        v-if="error"
+        class="error"
+      >
+        {{ error }}
+      </p>
     </form>
 
-    <section>
-      <h2>Saved Projects</h2>
+    <section class="saved-projects">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Saved projects</p>
+          <h2>Your renovation projects</h2>
+        </div>
+      </div>
 
-      <p v-if="projects.length === 0">
+      <p
+        v-if="projects.length === 0"
+        class="empty"
+      >
         No projects saved yet.
       </p>
 
-      <div
+      <ProjectCard
         v-for="savedProject in projects"
         :key="savedProject.id"
-      >
-        <h3>{{ savedProject.name }}</h3>
-
-        <p>
-          Budget: £{{ savedProject.budget.toLocaleString() }}
-        </p>
-
-        <p>
-          Extension:
-          {{ savedProject.extension_size }} m²
-        </p>
-
-        <p>
-          Kitchen:
-          {{ savedProject.kitchen_spec }}
-        </p>
-
-        <p>
-          Bathroom:
-          {{ savedProject.bathroom_spec }}
-        </p>
-
-        <button
-          type="button"
-          @click="runProjectSimulation(savedProject.id)"
-        >
-          {{
-            simulationLoading === savedProject.id
-              ? 'Running simulation...'
-              : 'Run Simulation'
-          }}
-        </button>
-
-        <div v-if="simulationResults[savedProject.id]">
-          <h3>
-            {{ getBudgetStatus(savedProject.id) }}
-          </h3>
-
-          <p>
-            Budget:
-            £{{ simulationResults[savedProject.id].budget.toLocaleString() }}
-          </p>
-
-          <h4>Simulation Results</h4>
-
-          <p>
-            Mean cost:
-            £{{ simulationResults[savedProject.id].mean_cost.toLocaleString(undefined, {
-              maximumFractionDigits: 0
-            }) }}
-          </p>
-
-          <p>
-            Median cost:
-            £{{ simulationResults[savedProject.id].median_cost.toLocaleString(undefined, {
-              maximumFractionDigits: 0
-            }) }}
-          </p>
-
-          <p>
-            P10:
-            £{{ simulationResults[savedProject.id].p10.toLocaleString(undefined, {
-              maximumFractionDigits: 0
-            }) }}
-          </p>
-
-          <p>
-            P90:
-            £{{ simulationResults[savedProject.id].p90.toLocaleString(undefined, {
-              maximumFractionDigits: 0
-            }) }}
-          </p>
-
-          <p>
-            Probability of exceeding budget:
-            {{ (simulationResults[savedProject.id].over_budget_probability * 100).toFixed(1) }}%
-          </p>
-
-          <p>
-            Probability of staying within budget:
-            {{ (simulationResults[savedProject.id].under_budget_probability * 100).toFixed(1) }}%
-          </p>
-        </div>
-      </div>
+        :project="savedProject"
+        :simulation-result="simulationResults[savedProject.id]"
+        :simulation-loading="
+          simulationLoading === savedProject.id
+        "
+        @simulate="runProjectSimulation"
+        @delete="deleteProject"
+      />
     </section>
   </main>
 </template>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
+<style scoped>
+.projects {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px;
 }
 
-main {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 40px 20px;
+.page-header {
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666;
 }
 
 h1 {
-  margin-bottom: 8px;
+  margin: 0;
+  font-size: 36px;
 }
 
-section {
+.subtitle {
+  margin-top: 10px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.project-form section {
+  padding: 28px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
   background: white;
-  padding: 24px;
-  margin-top: 24px;
-  border-radius: 8px;
 }
 
-label {
+.project-form h2 {
+  margin-top: 0;
+}
+
+.project-form label {
   display: block;
-  margin-top: 16px;
+  margin-top: 18px;
   font-weight: 600;
 }
 
-input[type='text'],
-input[type='number'],
-select {
+.project-form input[type='text'],
+.project-form input[type='number'],
+.project-form select {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  margin-top: 6px;
-  padding: 10px;
+  margin-top: 7px;
+  padding: 11px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 7px;
+  background: white;
+  font-size: 15px;
 }
 
-input[type='checkbox'] {
+.checkbox-label {
+  font-weight: 500 !important;
+}
+
+.checkbox-label input {
   margin-right: 8px;
 }
 
-button {
-  margin-top: 24px;
+.field-error {
+  display: block;
+  margin-top: 5px;
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.create-button {
+  align-self: flex-start;
   padding: 12px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #222;
   color: white;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.success {
+  margin: 0;
+  color: #0f5132;
+}
+
+.error {
+  margin: 0;
+  color: #c0392b;
+}
+
+.saved-projects {
+  margin-top: 40px;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.empty {
+  color: #666;
+}
+
+@media (max-width: 800px) {
+  .projects {
+    padding: 24px;
+  }
 }
 </style>

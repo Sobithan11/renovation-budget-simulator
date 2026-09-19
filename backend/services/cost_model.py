@@ -34,33 +34,36 @@ def sample_cost(category, simulations=1, option=None):
 def calculate_project_cost(project):
     total_cost = 0.0
 
-    # Extension is treated as a base construction cost.
-    # The extension rate already includes basic structural,
-    # electrical, plumbing, plastering, roofing and standard
-    # windows/doors work.
+    # Extension
     if project.extension_size > 0:
         extension_rate = sample_cost("extension")[0]
         total_cost += extension_rate * project.extension_size
 
-    # These are treated as additional costs because they are
-    # not included in the base extension rate.
+    # Kitchen
     if project.kitchen_spec != "none":
-        total_cost += sample_cost("kitchen", option=project.kitchen_spec)[0]
+        total_cost += sample_cost(
+            "kitchen",
+            option=project.kitchen_spec
+        )[0]
 
+    # Bathroom
     if project.bathroom_spec != "none":
-        total_cost += sample_cost("bathroom", option=project.bathroom_spec)[0]
+        total_cost += sample_cost(
+            "bathroom",
+            option=project.bathroom_spec
+        )[0]
 
+    # Flooring
     if project.flooring_area > 0:
         flooring_rate = sample_cost("flooring")[0]
         total_cost += flooring_rate * project.flooring_area
 
+    # Landscaping
     if project.landscaping_area > 0:
         landscaping_rate = sample_cost("landscaping")[0]
         total_cost += landscaping_rate * project.landscaping_area
 
-    # These are only added when there is no extension.
-    # Otherwise they are assumed to be covered by the
-    # extension construction allowance.
+    # Additional standalone work
     if project.extension_size == 0:
 
         if project.electrical_work:
@@ -80,3 +83,81 @@ def calculate_project_cost(project):
             total_cost += window_door_cost * project.windows_doors
 
     return total_cost
+
+
+def calculate_project_cost_breakdown(project):
+    breakdown = {}
+
+    # Extension
+    if project.extension_size > 0:
+        extension_rate = sample_cost("extension")[0]
+        breakdown["extension"] = extension_rate * project.extension_size
+    else:
+        breakdown["extension"] = 0.0
+
+    # Kitchen
+    if project.kitchen_spec != "none":
+        breakdown["kitchen"] = sample_cost(
+            "kitchen",
+            option=project.kitchen_spec
+        )[0]
+    else:
+        breakdown["kitchen"] = 0.0
+
+    # Bathroom
+    if project.bathroom_spec != "none":
+        breakdown["bathroom"] = sample_cost(
+            "bathroom",
+            option=project.bathroom_spec
+        )[0]
+    else:
+        breakdown["bathroom"] = 0.0
+
+    # Flooring
+    if project.flooring_area > 0:
+        flooring_rate = sample_cost("flooring")[0]
+        breakdown["flooring"] = flooring_rate * project.flooring_area
+    else:
+        breakdown["flooring"] = 0.0
+
+    # Landscaping
+    if project.landscaping_area > 0:
+        landscaping_rate = sample_cost("landscaping")[0]
+        breakdown["landscaping"] = (
+            landscaping_rate * project.landscaping_area
+        )
+    else:
+        breakdown["landscaping"] = 0.0
+
+    # Standalone work
+    if project.extension_size == 0:
+
+        if project.electrical_work:
+            breakdown["electrical"] = sample_cost("electrical")[0]
+        else:
+            breakdown["electrical"] = 0.0
+
+        if project.plumbing_work:
+            breakdown["plumbing"] = sample_cost("plumbing")[0]
+        else:
+            breakdown["plumbing"] = 0.0
+
+        if project.plastering_work:
+            breakdown["plastering"] = sample_cost("plastering")[0]
+        else:
+            breakdown["plastering"] = 0.0
+
+        if project.painting_work:
+            breakdown["painting"] = sample_cost("painting")[0]
+        else:
+            breakdown["painting"] = 0.0
+
+        if project.windows_doors > 0:
+            window_door_cost = sample_cost("windows_doors")[0]
+            breakdown["windows_doors"] = (
+                window_door_cost * project.windows_doors
+            )
+        else:
+            breakdown["windows_doors"] = 0.0
+
+    return breakdown

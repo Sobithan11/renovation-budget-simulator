@@ -156,9 +156,13 @@ def simulate_project(project_id):
         landscaping_area=project["landscaping_area"],
     )
 
-    results = run_simulation(project, 10_000)
+    results, breakdowns = run_simulation(project, 10_000)
 
-    analysis = analyse_results(results, project.budget)
+    analysis = analyse_results(
+        results,
+        project.budget,
+        breakdowns
+    )
 
     return jsonify({
         "project_id": project_id,

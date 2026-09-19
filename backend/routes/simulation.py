@@ -44,8 +44,12 @@ def simulate():
         landscaping_area=data.get("landscaping_area", 0),
     )
 
-    results = run_simulation(project, 10_000)
+    results, breakdowns = run_simulation(project, 10_000)
 
-    analysis = analyse_results(results, project.budget)
+    analysis = analyse_results(
+        results,
+        project.budget,
+        breakdowns
+    )
 
     return jsonify(analysis)
