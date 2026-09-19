@@ -4,6 +4,7 @@ import ScenarioCard from '../components/ScenarioCard.vue'
 import ScenarioComparisonChart from '../components/ScenarioComparisonChart.vue'
 import RiskComparisonChart from '../components/RiskComparisonChart.vue'
 import SimulationResults from '../components/SimulationResults.vue'
+import { API_BASE_URL } from '../config'
 import type {
   Project,
   Scenario,
@@ -146,7 +147,7 @@ async function runScenario() {
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:5000/simulate',
+      `${API_BASE_URL}/simulate`,
       {
         method: 'POST',
         headers: {
@@ -199,7 +200,7 @@ async function loadProjects() {
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:5000/projects',
+      `${API_BASE_URL}/projects`,
     )
 
     if (!response.ok) {

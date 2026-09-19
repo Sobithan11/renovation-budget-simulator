@@ -6,6 +6,7 @@ import type {
   SimulationResult,
 } from '../types/simulation'
 import { formatCurrency } from '../utils/formatters'
+import { API_BASE_URL } from '../config'
 
 const projects = ref<Project[]>([])
 const selectedProjectId = ref<number | null>(null)
@@ -27,7 +28,7 @@ async function loadProjects() {
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:5000/projects',
+      `${API_BASE_URL}/projects`,
     )
 
     if (!response.ok) {
@@ -58,7 +59,7 @@ async function runSimulation() {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:5000/projects/${selectedProjectId.value}/simulate`,
+      `${API_BASE_URL}/projects/${selectedProjectId.value}/simulate`,
       {
         method: 'POST',
       },

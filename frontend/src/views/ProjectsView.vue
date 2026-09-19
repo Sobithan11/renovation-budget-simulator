@@ -1,5 +1,6 @@
 ```vue
 <script setup lang="ts">
+import { API_BASE_URL } from '../config'
 import { nextTick, onMounted, reactive, ref } from 'vue'
 import ProjectCard from '../components/ProjectCard.vue'
 import type {
@@ -148,7 +149,7 @@ async function createProject() {
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:5000/projects',
+      `${API_BASE_URL}/projects`,
       {
         method: 'POST',
         headers: {
@@ -195,7 +196,7 @@ async function runProjectSimulation(projectId: number) {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:5000/projects/${projectId}/simulate`,
+      `${API_BASE_URL}/projects/${projectId}/simulate`,
       {
         method: 'POST',
       },
@@ -223,7 +224,7 @@ async function deleteProject(projectId: number) {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:5000/projects/${projectId}`,
+      `${API_BASE_URL}/projects/${projectId}`,
       {
         method: 'DELETE',
       },
@@ -250,7 +251,7 @@ async function deleteProject(projectId: number) {
 async function loadProjects() {
   try {
     const response = await fetch(
-      'http://127.0.0.1:5000/projects',
+      `${API_BASE_URL}/projects`,
     )
 
     if (!response.ok) {
