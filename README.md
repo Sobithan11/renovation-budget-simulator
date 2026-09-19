@@ -2,7 +2,9 @@
 
 A full-stack web application for estimating renovation costs using **Monte Carlo simulation**. Instead of producing a single fixed estimate, the simulator models uncertainty in renovation costs and generates a range of possible outcomes, helping users understand both expected costs and financial risk.
 
----
+## 🌐 Live Demo
+
+[Open the live application](https://renovation-budget-simulator-1.onrender.com)
 
 ## ✨ Features
 
