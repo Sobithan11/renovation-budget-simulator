@@ -2,12 +2,16 @@ import sqlite3
 from pathlib import Path
 
 
-DATABASE_FILE = Path(__file__).parent.parent / "database" / "renovation.db"
+DATABASE_DIRECTORY = Path(__file__).parent.parent / "database"
+DATABASE_FILE = DATABASE_DIRECTORY / "renovation.db"
 
 
 def get_connection():
+    DATABASE_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
     connection = sqlite3.connect(DATABASE_FILE)
     connection.row_factory = sqlite3.Row
+
     return connection
 
 
